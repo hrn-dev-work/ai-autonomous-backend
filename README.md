@@ -14,6 +14,11 @@ This is a **demo app** that shows how to build a reliable AI reply feature for t
 
 This repository is a **portfolio sample** for technical review and hiring conversations. It is intentionally small.
 
+**Live demo (mock only, no LLM API secrets):**  
+https://ai-autonomous-backend.vercel.app/ai-chat  
+
+Source: https://github.com/hrn-dev-work/ai-autonomous-backend
+
 ---
 
 ## Try it (about 2 minutes)
@@ -104,6 +109,11 @@ LINEボットや社内ツール向けに、**AIの返答を返す仕組みを、
 **実際に見えるもの:** ブラウザで文章を送ると、**モック（本物のAIではない・少し待つだけの応答）**が返ります。有料APIキーも **データベースも不要** です。
 
 ポートフォリオ用の小さな見本です。
+
+**ライブデモ（モックのみ。LLM の秘密鍵は不要）:**  
+https://ai-autonomous-backend.vercel.app/ai-chat  
+
+ソース: https://github.com/hrn-dev-work/ai-autonomous-backend
 
 ---
 
