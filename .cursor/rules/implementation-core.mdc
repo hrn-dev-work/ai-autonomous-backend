@@ -1,0 +1,32 @@
+---
+description: Implementation basics (practical DDD, naming, loose coupling). On code edits.
+globs: backend/**/*,frontend/**/*,src/**/*,app/**/*,lib/**/*,scripts/**/*
+alwaysApply: false
+---
+
+# Implementation basics
+
+Prerequisites: `~/.cursor/rules/global-balanced-defaults.mdc` / `project-entry.mdc` / `testing-istqb.mdc`
+
+## Practical DDD
+
+| Concern | Rule |
+|---------|------|
+| Ubiquitous language | Same domain terms in code / API / UI / docs (`CONTEXT.md` glossary wins) |
+| Boundaries | Business rules in domain / application. API·UI are I/O. DB·external I/O in infrastructure |
+| Dependency direction | Outside → inside. Swap points via Protocol / factory / DI |
+
+## If / Then
+
+- **If:** a name like `process_data` hides the job, **Then:** rename so the role is obvious.
+- **If:** writing UI copy or errors, **Then:** short text a non-engineer can understand (abbreviations only if established).
+- **If:** about to import a concrete infra type from a route / UI, **Then:** use factory / Protocol / DI.
+- **If:** changing behavior, **Then:** update `docs/` (and API spec if any) before code.
+- **If:** finishing a code implementation, **Then:** follow `.cursor/rules/implementation-retrospective.mdc` and append `docs/implementation-retrospective.md` (same on `stop` hook).
+
+## Loose coupling
+
+- No cross-layer knowledge: no formulas in UI, no SQL in routes/pages
+- Config and secrets only via config / env
+
+<!-- Project-specific layer paths: backend-*.mdc / frontend-*.mdc -->

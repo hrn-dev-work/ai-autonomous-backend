@@ -1,0 +1,44 @@
+---
+description: Post-implementation retrospective. On stop hook / when implementation finishes.
+globs: backend/**/*,frontend/**/*,src/**/*,app/**/*,lib/**/*
+alwaysApply: false
+---
+
+# Implementation retrospective
+
+Run **just before** finishing a code implementation task (including when a `stop` hook opens this).
+
+## Steps
+
+1. **Check** changed files against:
+   - `.cursor/rules/implementation-core.mdc`
+   - `.cursor/rules/testing-istqb.mdc`
+   - Project layer rules (`backend-*` / `frontend-*`, etc.)
+2. **Record** one session entry in `docs/implementation-retrospective.md`
+   - date / summary / what went well / improvements / whether rules changed
+3. **Update rules** only for improvements that prevent recurrence (minimal `.cursor/rules/*.mdc` edits)
+   - Same issue twice or more → prefer a rule
+   - One-off accident → log only
+4. **Report** one trailing line: `Retrospective: logged (rules updated: yes/no)`
+
+## Relation to closeout
+
+- This rule = **per implementation** log + rule tweak.
+- Whole-session wrap (cross-project prevention, PR decision) is `agent-session-closeout`. Closeout may invoke this rule; do not double-append the log.
+
+## Checklist (excerpt)
+
+| Lens | Question |
+|------|----------|
+| Naming | Can a non-engineer understand UI/errors? |
+| Coupling | Any cross-layer knowledge or concrete imports? |
+| Tests | Which ISTQB level needs new coverage? |
+| Specs | Did docs keep up with code? |
+| Hosted DoD | If public URL / smoke status changed: README locales, conventions, deploy guide, CONTEXT, retrospective evidence — **same change**? |
+| Ignore sync | Did `.gitignore` / `.cursorignore` dump exceptions stay aligned (e.g. `*.sql` vs `!prisma/migrations/**/*.sql`)? |
+| Scratch files | Any `??` install/debug scripts? Delete, or commit with docs — do not leave ambiguous orphans |
+
+## Skip
+
+- User says skip retrospective / questions only
+- No code changes (docs-only or research-only) — still run Hosted DoD / Ignore sync rows when those files changed

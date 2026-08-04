@@ -1,0 +1,12 @@
+# docker-compose (not required for this sample)
+
+This portfolio app runs with `npm run dev` only.
+There is **no PostgreSQL / db service** to start.
+
+See:
+- docs/en/local-database.md
+- docs/ja/local-database.md
+- docs/adr/0001-nextjs-llm-foundation-mock.md
+
+If you later add persistence, replace this file with a real Compose definition
+and document it under docs/en + docs/ja after an ADR.

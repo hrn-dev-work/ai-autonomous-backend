@@ -1,0 +1,119 @@
+---
+description: >-
+  Zero-oversight 7-stage sequential review (Scout→Tooling→Validator→Architect→DBA→SRE→Writer/SDET).
+  Run when user asks to implementation-review, pre-commit review, or「コミットしたいので
+  implementation-review を実行して」. Do NOT auto-run during normal coding.
+  Customize Stage 2–7 checklists to match docs/agents/stack.md after bootstrap.
+alwaysApply: false
+---
+
+# Zero-Oversight Automated Review Protocol
+
+You are an automated CI/CD pipeline supervisor coordinating multiple expert reviewers.
+
+**When to run:** Only when the user explicitly requests `implementation-review` (or equivalent pre-commit review). Do not run this protocol on every file edit.
+
+You MUST execute the following 7 stages in EXACT sequential order.
+
+**CRITICAL RULES:**
+
+- Do NOT skip any stages.
+- Do NOT guess. Prove everything by reading `git diff HEAD` (and unstaged/staged as needed) and by running commands.
+- One role at a time: finish the current stage checklist before starting the next.
+- If any stage fails, STOP, write the report with **FINAL STATUS: FAIL**, and ask before auto-fixing. Do not proceed to git commit.
+
+Shell: use WSL (`wsl-agent-invoke`) when the workspace is under `\\wsl.localhost\`.
+
+Related: `testing-istqb.mdc`, `security-git.mdc`, `docs/agents/security.md`, `git-commit-boundary.mdc`, `docs/agents/stack.md`.
+
+---
+
+## Stage 1: The Scout (Pre-review Cleanup)
+
+- [ ] Remove unused imports and dead variables.
+- [ ] Refactor deep nesting into early returns (guard clauses).
+- [ ] Ensure names reflect domain language (`CONTEXT.md`).
+
+If Scout applies edits, re-read the diff before Stage 2.
+
+---
+
+## Stage 2: Tooling Verification
+
+Run the project’s standard checks from the repo root (adapt to `docs/agents/stack.md` / `package.json` / `pyproject.toml`). Typical Node/Nest sample:
+
+1. Lint (`npm run lint` or project equivalent)
+2. Schema validate if ORM schema changed (`npx prisma validate`, Alembic check, etc.)
+3. Tests (`npm test` / `pytest` / project equivalent)
+
+If a command does not exist for this stack, mark SKIPPED with reason — do not invent a green result. Record evidence in the report. Any hard FAIL → STOP.
+
+---
+
+## Stage 3: The Validator (Security & Typing)
+
+- [ ] **Input validation** at HTTP/API boundaries (DTO/Zod/Pydantic per stack).
+- [ ] **Auth / signing** required by the feature remains intact (e.g. HMAC, session, API key).
+- [ ] **Secrets:** no hardcoded secrets; config via env / Config layer only. Prefer root `.cursorignore` for dumps/logs/env.
+
+---
+
+## Stage 4: The Domain Architect (Design)
+
+- [ ] **Separation of concerns:** Controllers/routes are I/O; business rules in services/domain.
+- [ ] **Idempotency / invariants** for retries and unique business keys (when the feature requires them).
+- [ ] **Data access:** no N+1 query loops; transactions for multi-mutation consistency when needed.
+
+---
+
+## Stage 5: The DBA (Database Safety)
+
+If schema/migrations changed; otherwise **SKIPPED**:
+
+- [ ] Flag destructive / data-loss migrations as CRITICAL WARNING.
+- [ ] New filter/join paths have indexes (or documented reason).
+
+---
+
+## Stage 6: The SRE (Observability & Reliability)
+
+- [ ] Contextual logging (correlation ids / business keys); avoid raw unstructured `console.log` / `print` in hot paths when a logger exists.
+- [ ] No silent catches without log or rethrow.
+- [ ] Outbound HTTP / external calls have explicit timeouts when applicable.
+
+---
+
+## Stage 7: The Technical Writer & SDET (Docs & Tests)
+
+- [ ] API docs / OpenAPI annotations updated when public contracts change.
+- [ ] Tests cover changed business logic and critical HTTP paths; prefer ISTQB boundaries (`testing-istqb.mdc`).
+- [ ] README / `docs/` / `docs/agents/skill-set.md` updated when env or demonstrated skills change (`docs-language`).
+
+---
+
+## Final Output Generation (Mandatory)
+
+Create or overwrite `docs/reviews/latest.md`:
+
+~~~markdown
+# Comprehensive Review Report
+- **Date:** [Current Date & Time]
+- **Files Changed:** [List changed files]
+
+## Sign-offs
+- [PASS/FAIL] **The Scout** (Cleanup applied?)
+- [PASS/FAIL] **Tooling** (Lint & Tests passed?)
+- [PASS/FAIL] **The Validator** (Security & Validation)
+- [PASS/FAIL] **The Architect** (Domain & Architecture)
+- [PASS/FAIL/SKIPPED] **The DBA** (Schema changes safe?)
+- [PASS/FAIL] **The SRE** (Logs & Error handling)
+- [PASS/FAIL] **Writer & SDET** (API docs, Docs, Tests)
+
+## Issues Found & Required Fixes
+[List specific issues by reviewer. If none, write "None."]
+
+## FINAL STATUS: [PASS or FAIL]
+~~~
+
+**If FAIL:** Ask whether to auto-fix issues by reviewer name. Do not commit until the user confirms.  
+**If PASS:** Report green; wait for an explicit commit request unless already asked.

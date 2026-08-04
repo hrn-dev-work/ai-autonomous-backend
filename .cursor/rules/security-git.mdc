@@ -1,0 +1,24 @@
+---
+description: Secrets and Git safety. When editing scripts / env files.
+globs: scripts/**/*,.env*,**/.env*,**/credentials*,**/*secret*
+alwaysApply: false
+---
+
+# Security and Git
+
+## Secrets
+
+- Never put API keys, tokens, or `.env` values in code, logs, or commits
+- Never send server-only keys to the browser
+- Do not log PII
+
+## Git
+
+- **Default:** no `git commit` until the user explicitly asks. Same for push / force push / amend.
+- **Explicit chain:** phrases like “commit”, “through push”, “create the PR” authorize add → commit → push → PR. They do **not** authorize `gh pr merge` / squash (user on GitHub).
+- Before commit / push / PR: apply `~/.cursor/rules/git-commit-boundary.mdc`.
+
+## Environment variables
+
+- New env keys: add **names only** to `.env.example` (empty or dummy values)
+- Never bake production secrets into defaults

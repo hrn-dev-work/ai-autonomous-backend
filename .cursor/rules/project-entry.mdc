@@ -1,0 +1,35 @@
+---
+description: "ai-autonomous-backend — project entry (alwaysApply). Follow scoped rules for detail."
+alwaysApply: true
+---
+
+# Project entry (ai-autonomous-backend)
+
+**Globals are mandatory for all work** — follow `~/.cursor/rules/global-work-strict.mdc` and `global-agent-routing.mdc`. This table **adds** project routes; it does **not** waive globals.
+
+Global: `~/.cursor/rules/global-agent-routing.mdc` / `project-foundation.mdc` / `global-work-strict.mdc`
+
+**If:** a row below matches, **Then:** follow that reference. Read the `.mdc` / skill only when full text is not already in context (globs may already include it).
+
+| Situation | Follow |
+|-----------|--------|
+| Before non-trivial work (pipeline) | Global `project-foundation` — grill → `grill-writeback` → plan if multi-file → … |
+| Languages · DB · frameworks | `docs/agents/stack.md` (else `~/.cursor/rules/default-stack.mdc`) |
+| Code edits | `.cursor/rules/implementation-core.mdc` |
+| Tests | `.cursor/rules/testing-istqb.mdc` (+ `tdd-discipline` when writing tests) |
+| Secrets · Git | `.cursor/rules/security-git.mdc` |
+| Before commit / push / PR | `~/.cursor/rules/git-commit-boundary.mdc` |
+| After edits / before 完了 | `agent-self-review` → `verification-before-done` |
+| URL/UI DoD smoke | `browser-smoke-verify` + `browser-chrome.mdc` |
+| Web UI copy | `~/.cursor/rules/ui-i18n-locale.mdc` + project frontend rules if any |
+| Web UI look · dashboards | `distinctive-ui` skill + `~/.cursor/rules/distinctive-ui.mdc` |
+| React/TSX naming · prop shadowing | `~/.cursor/rules/react-component-conventions.mdc` |
+| Shell (WSL) | `wsl-agent-invoke` skill |
+| Doc locales | `docs-language` skill |
+| Skill / rule inventory | `docs/agents/skill-set.md` |
+| Pre-commit / implementation-review (explicit) | `.cursor/rules/implementation-review.mdc` (7-stage; user-requested only) |
+| Post-implementation retrospective | `.cursor/rules/implementation-retrospective.mdc` (read → steps → append `docs/implementation-retrospective.md`) |
+
+<!-- Project-specific: add backend-*.mdc / frontend-*.mdc / docs-*.mdc rows above -->
+
+**If:** the repo has `scripts/git-*.sh`, **Then:** follow that script table (`AGENTS.md` or `.cursor/skills/`).

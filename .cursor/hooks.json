@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "hooks": {
+    "afterFileEdit": [
+      {
+        "command": ".cursor/hooks/track-code-edit.sh"
+      }
+    ],
+    "stop": [
+      {
+        "command": ".cursor/hooks/stop-retrospective.sh",
+        "loop_limit": 2
+      }
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+---
+description: Test design (ISTQB Foundation). When editing test files.
+globs: **/*test*,**/*spec*,**/tests/**,**/test/**,**/__tests__/**,**/*.test.ts,**/*.test.tsx,**/*.test.py
+alwaysApply: false
+---
+
+# Testing (ISTQB Foundation Level)
+
+Use the Foundation Level v4.0 **five test levels** as the baseline.
+
+## Test levels
+
+| Level | Purpose | Examples |
+|-------|---------|----------|
+| **Component** | Unit behavior | Pure functions, domain logic, schema validation |
+| **Component integration** | Interfaces between components | API + service (DB/external APIs faked) |
+| **System** | Whole-system functional / non-functional | Primary user-flow E2E |
+| **System integration** | Interfaces with externals | Real external API / DB (fixtures / contracts) |
+| **Acceptance** | Meets acceptance criteria | Scenarios from requirements |
+
+<!-- Project-specific: concrete examples in docs/ or layer rules -->
+
+## If / Then
+
+- **If:** writing a test case, **Then:** derive it from specs/requirements — not only from implementation convenience.
+- **If:** fixing a bug or adding a feature, **Then:** add (1) a confirming test and (2) regression on the critical path.
+- **If:** running tests in parallel, **Then:** do not share DB / filesystem state across tests.
+- **If:** the touched area lacks tests, **Then:** add in order Component → Component integration → System.
+- **If:** the user explicitly says tests are not needed, **Then:** skip.
+
+## Commands
+
+- Lint / test commands live in `AGENTS.md` or a project dev skill (not in this rule).
