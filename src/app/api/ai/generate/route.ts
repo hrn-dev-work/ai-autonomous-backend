@@ -1,16 +1,13 @@
 import { NextResponse } from "next/server";
 
-import {
-  DomainError,
-  ValidationError,
-} from "@/domain/ai/errors";
+import { ValidationError } from "@/domain/ai/errors";
 import type { LlmProvider } from "@/domain/ai/types";
 import {
   checkDemoApiKey,
   clientRateLimitKey,
   getSharedRateLimiter,
 } from "@/infrastructure/http/demo-access";
-import { GenerateTextUseCase } from "@/usecase/ai/generate-text";
+import { executeGenerateCommand } from "@/usecase/ai/execute-generate-command";
 
 export const runtime = "nodejs";
 
@@ -31,9 +28,9 @@ function parseProvider(value: unknown): LlmProvider | undefined {
 }
 
 /**
- * POST /api/ai/generate
- * Boundary: optional API key, rate limit, validates JSON, maps domain errors.
- * Does not embed system prompts.
+ * POST /api/ai/generate — external/curl boundary.
+ * Requires GENERATE_API_KEY when configured (production sets this).
+ * Rate-limited via Upstash when configured, else in-memory.
  */
 export async function POST(request: Request): Promise<NextResponse> {
   try {
@@ -48,8 +45,10 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
 
-    const limiter = getSharedRateLimiter();
-    const decision = limiter.consume(clientRateLimitKey(request));
+    const limiter = await getSharedRateLimiter();
+    const decision = await limiter.consume(
+      `api:${clientRateLimitKey(request)}`,
+    );
     if (!decision.allowed) {
       const retryAfterSec = Math.ceil(decision.retryAfterMs / 1000);
       return NextResponse.json(
@@ -81,7 +80,6 @@ export async function POST(request: Request): Promise<NextResponse> {
       throw new ValidationError("userMessage must be a string");
     }
 
-    // Only mock is wired; refuse openai/claude labels so public demos never imply live paid calls.
     const requestedProvider = parseProvider(body.provider);
     if (requestedProvider !== undefined && requestedProvider !== "mock") {
       throw new ValidationError(
@@ -102,17 +100,25 @@ export async function POST(request: Request): Promise<NextResponse> {
       simulate = body.simulateTransientFailures;
     }
 
-    const useCase = new GenerateTextUseCase();
-    const result = await useCase.execute({
+    const outcome = await executeGenerateCommand({
       userMessage: body.userMessage,
-      provider: "mock",
       simulateTransientFailures: simulate,
     });
+
+    if (!outcome.ok) {
+      return NextResponse.json(
+        {
+          ok: false as const,
+          error: { code: outcome.code, message: outcome.message },
+        },
+        { status: outcome.httpStatus },
+      );
+    }
 
     return NextResponse.json(
       {
         ok: true as const,
-        data: result,
+        data: outcome.data,
       },
       {
         headers: {
@@ -123,14 +129,11 @@ export async function POST(request: Request): Promise<NextResponse> {
   } catch (error) {
     if (error instanceof ValidationError) {
       return NextResponse.json(
-        { ok: false as const, error: { code: error.code, message: error.message } },
+        {
+          ok: false as const,
+          error: { code: error.code, message: error.message },
+        },
         { status: 400 },
-      );
-    }
-    if (error instanceof DomainError) {
-      return NextResponse.json(
-        { ok: false as const, error: { code: error.code, message: error.message } },
-        { status: 502 },
       );
     }
     return NextResponse.json(

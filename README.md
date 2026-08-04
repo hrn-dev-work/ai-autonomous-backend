@@ -17,6 +17,10 @@ This repository is a **portfolio sample** for technical review and hiring conver
 **Live demo (mock only, no LLM API secrets):**  
 https://ai-autonomous-backend.vercel.app/ai-chat  
 
+- Browser UI: Server Action (no API key in the client)  
+- External `POST /api/ai/generate`: requires production `GENERATE_API_KEY`  
+- Security notes: [docs/en/security.md](docs/en/security.md)
+
 Source: https://github.com/hrn-dev-work/ai-autonomous-backend
 
 ---
@@ -70,6 +74,15 @@ Content-Type: application/json
 
 Set `"simulateTransientFailures": 2` to force the first two attempts to fail so retries appear in the response (`attempts`, `latencyMs`).
 
+With production `GENERATE_API_KEY` set:
+
+```bash
+curl -s -X POST https://ai-autonomous-backend.vercel.app/api/ai/generate \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $GENERATE_API_KEY" \
+  -d '{"userMessage":"hello"}'
+```
+
 ### Architecture (engineers)
 
 ```
@@ -112,6 +125,10 @@ LINEボットや社内ツール向けに、**AIの返答を返す仕組みを、
 
 **ライブデモ（モックのみ。LLM の秘密鍵は不要）:**  
 https://ai-autonomous-backend.vercel.app/ai-chat  
+
+- ブラウザ UI: Server Action（クライアントに API キー無し）  
+- 外部 `POST /api/ai/generate`: 本番 `GENERATE_API_KEY` 必須  
+- セキュリティ: [docs/ja/security.md](docs/ja/security.md)
 
 ソース: https://github.com/hrn-dev-work/ai-autonomous-backend
 
@@ -165,6 +182,15 @@ Content-Type: application/json
 ```
 
 `"simulateTransientFailures": 2` で最初の2回を失敗させ、レスポンスの `attempts` / `latencyMs` でリトライを確認できます。
+
+本番で `GENERATE_API_KEY` を設定済みの場合:
+
+```bash
+curl -s -X POST https://ai-autonomous-backend.vercel.app/api/ai/generate \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $GENERATE_API_KEY" \
+  -d '{"userMessage":"hello"}'
+```
 
 ### アーキテクチャ（エンジニア向け）
 

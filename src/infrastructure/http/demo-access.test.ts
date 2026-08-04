@@ -1,31 +1,36 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeEach } from "vitest";
 
 import {
   MemoryRateLimiter,
   checkDemoApiKey,
   clientRateLimitKey,
+  resetSharedRateLimiterForTests,
 } from "@/infrastructure/http/demo-access";
 
 describe("MemoryRateLimiter", () => {
-  it("allows up to maxRequests within the window then blocks", () => {
+  beforeEach(() => {
+    resetSharedRateLimiterForTests();
+  });
+
+  it("allows up to maxRequests within the window then blocks", async () => {
     const now = 1_000;
     const limiter = new MemoryRateLimiter(2, 1_000, () => now);
 
-    expect(limiter.consume("a").allowed).toBe(true);
-    expect(limiter.consume("a").allowed).toBe(true);
-    const blocked = limiter.consume("a");
+    expect((await limiter.consume("a")).allowed).toBe(true);
+    expect((await limiter.consume("a")).allowed).toBe(true);
+    const blocked = await limiter.consume("a");
     expect(blocked.allowed).toBe(false);
     expect(blocked.retryAfterMs).toBeGreaterThan(0);
   });
 
-  it("resets after the window moves forward", () => {
+  it("resets after the window moves forward", async () => {
     let now = 1_000;
     const limiter = new MemoryRateLimiter(1, 500, () => now);
 
-    expect(limiter.consume("b").allowed).toBe(true);
-    expect(limiter.consume("b").allowed).toBe(false);
+    expect((await limiter.consume("b")).allowed).toBe(true);
+    expect((await limiter.consume("b")).allowed).toBe(false);
     now = 1_600;
-    expect(limiter.consume("b").allowed).toBe(true);
+    expect((await limiter.consume("b")).allowed).toBe(true);
   });
 });
 

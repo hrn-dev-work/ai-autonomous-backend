@@ -3,32 +3,20 @@
 import { useState, type FormEvent } from "react";
 import { RefreshCw, Send } from "lucide-react";
 
+import { generateDemoText } from "@/app/ai-chat/actions";
 import { ResponseSkeleton } from "@/components/ai/response-skeleton";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 
-interface GenerateSuccess {
-  ok: true;
-  data: {
-    text: string;
-    promptVersion: string;
-    provider: string;
-    attempts: number;
-    latencyMs: number;
-    usedMock: boolean;
-  };
-}
-
-interface GenerateFailure {
-  ok: false;
-  error: {
-    code: string;
-    message: string;
-  };
-}
-
-type GenerateResponse = GenerateSuccess | GenerateFailure;
+type ResultData = {
+  text: string;
+  promptVersion: string;
+  provider: string;
+  attempts: number;
+  latencyMs: number;
+  usedMock: boolean;
+};
 
 export function AiChatPanel() {
   const [userMessage, setUserMessage] = useState(
@@ -37,7 +25,7 @@ export function AiChatPanel() {
   const [simulateFailures, setSimulateFailures] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<GenerateSuccess["data"] | null>(null);
+  const [result, setResult] = useState<ResultData | null>(null);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -46,32 +34,10 @@ export function AiChatPanel() {
     setResult(null);
 
     try {
-      const response = await fetch("/api/ai/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userMessage,
-          provider: "mock",
-          simulateTransientFailures: simulateFailures ? 2 : 0,
-        }),
+      const payload = await generateDemoText({
+        userMessage,
+        simulateTransientFailures: simulateFailures ? 2 : 0,
       });
-
-      let payload: GenerateResponse;
-      try {
-        payload = (await response.json()) as GenerateResponse;
-      } catch {
-        setError("サーバー応答の解析に失敗しました");
-        return;
-      }
-
-      if (
-        typeof payload !== "object" ||
-        payload === null ||
-        !("ok" in payload)
-      ) {
-        setError("予期しないサーバー応答です");
-        return;
-      }
 
       if (!payload.ok) {
         setError(`${payload.error.code}: ${payload.error.message}`);
@@ -79,7 +45,7 @@ export function AiChatPanel() {
       }
       setResult(payload.data);
     } catch {
-      setError("ネットワークエラーが発生しました");
+      setError("リクエストに失敗しました。時間をおいて再度お試しください。");
     } finally {
       setLoading(false);
     }
@@ -129,7 +95,11 @@ export function AiChatPanel() {
 
         <div className="flex flex-wrap items-center gap-3">
           <Button type="submit" disabled={loading || userMessage.trim() === ""}>
-            {loading ? <Spinner className="text-[var(--accent-fg)]" /> : <Send className="size-4" />}
+            {loading ? (
+              <Spinner className="text-[var(--accent-fg)]" />
+            ) : (
+              <Send className="size-4" />
+            )}
             {loading ? "生成中…" : "生成する"}
           </Button>
           <Button
@@ -178,6 +148,8 @@ export function AiChatPanel() {
         {!loading && !error && !result && (
           <div className="flex h-full min-h-[280px] items-center justify-center rounded-md border border-dashed border-[var(--line)] bg-[var(--surface)]/60 px-6 text-center text-sm text-[var(--muted)]">
             生成結果がここに表示されます。応答待ちはスケルトンで状態を示します。
+            ブラウザは Server Action 経由（API キー不要）。curl は
+            GENERATE_API_KEY が必要です。
           </div>
         )}
       </section>

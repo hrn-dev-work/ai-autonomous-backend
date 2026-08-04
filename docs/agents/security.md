@@ -1,24 +1,32 @@
 # Security (agents)
 
-## Demo surface
+## Surfaces
 
-- `POST /api/ai/generate` is the only write-ish public API.
-- **Always:** in-process rate limit (`MemoryRateLimiter`) keyed by client IP headers.
-- **Optional:** `GENERATE_API_KEY` — when set, require Bearer or `x-api-key`.
-- LLM providers are mocked by default; no secrets in `NEXT_PUBLIC_*`.
+| Surface | Auth | Rate limit |
+|---------|------|------------|
+| Server Action `generateDemoText` | None (browser UI) | Yes (`ui:` prefix) |
+| `POST /api/ai/generate` | `GENERATE_API_KEY` when set | Yes (`api:` prefix) |
 
-## Env (names only)
+## Backends
+
+- **Upstash** when `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` are set (shared across serverless isolates).
+- Else **in-memory** `MemoryRateLimiter` (per isolate — not multi-instance strict).
+
+## Env names only
 
 - `GENERATE_API_KEY`
-- `GENERATE_RATE_LIMIT_MAX` (default 30)
-- `GENERATE_RATE_LIMIT_WINDOW_MS` (default 60000)
+- `GENERATE_RATE_LIMIT_MAX` / `GENERATE_RATE_LIMIT_WINDOW_MS`
+- `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`
 
-## Human guides
+Never put secrets in `NEXT_PUBLIC_*`. LLM keys are not used in mock mode.
 
-- English: [../en/security.md](../en/security.md)
-- Japanese: [../ja/security.md](../ja/security.md)
+## Human docs
 
-## Limits
+- [../en/security.md](../en/security.md)
+- [../ja/security.md](../ja/security.md)
 
-- Rate limiter is **not** multi-instance-safe (single Node process). Document + ADR if you change that.
-- Prompt text must not contain secrets or live PII.
+## GitHub / Vercel ops
+
+- Dependabot + CI workflow under `.github/`
+- Vercel spend caps: dashboard Billing (document only; not always CLI-configurable)
+- Secret scanning / push protection: enable on public repo via UI or GitHub API

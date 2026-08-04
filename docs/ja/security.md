@@ -2,34 +2,45 @@
 
 ## やさしい説明
 
-ローカルでは生成 API をすぐ試せます。ただし:
+1. **ブラウザデモ**（`/ai-chat`）は **Server Action** 経由。ブラウザに API キーは不要。
+2. **HTTP API**（`POST /api/ai/generate`）は、環境変数 **`GENERATE_API_KEY`** があるとき鍵必須（Vercel 本番で推奨）。
+3. **レート制限**は常時。複数インスタンスでは **Upstash Redis** 推奨。未設定時はインスタンス内メモリ。
 
-1. **レート制限**は常に有効（既定: IP あたり 1 分 30 回・プロセス内メモリ）。
-2. **任意の API キー** — 公開ホスト時は `GENERATE_API_KEY` を設定し、キーを持つ人だけが呼べるようにできます。
+## ヘッダ（HTTP API）
 
-ポートフォリオ見本向けの保護です。本番の複数インスタンスでは Redis 等の共有レート制限と本格認証に置き換えてください。
+| モード | 送るもの |
+|--------|----------|
+| キー未設定（ローカル既定） | 追加不要 |
+| キー設定あり（本番） | `x-api-key` または `Authorization: Bearer` |
 
-## ヘッダ
-
-| モード | クライアントが送るもの |
-|--------|------------------------|
-| キー未設定 | 追加不要 |
-| キー設定あり | `x-api-key: <キー>` または `Authorization: Bearer <キー>` |
+`GENERATE_API_KEY` を `NEXT_PUBLIC_*` に入れないでください。
 
 ## 環境変数
 
 | 変数 | 既定 | 意味 |
 |------|------|------|
-| `GENERATE_API_KEY` | （空） | 設定時は `POST /api/ai/generate` に必須 |
-| `GENERATE_RATE_LIMIT_MAX` | `30` | ウィンドウあたりの最大回数（IP キー単位） |
-| `GENERATE_RATE_LIMIT_WINDOW_MS` | `60000` | ウィンドウ長（ms） |
+| `GENERATE_API_KEY` | （ローカルは空） | 設定時は HTTP API に必須 |
+| `GENERATE_RATE_LIMIT_MAX` | `30` | ウィンドウあたり上限 |
+| `GENERATE_RATE_LIMIT_WINDOW_MS` | `60000` | ウィンドウ長 ms |
+| `UPSTASH_REDIS_REST_URL` | （空） | 共有レート制限用 |
+| `UPSTASH_REDIS_REST_TOKEN` | （空） | Upstash REST トークン |
+
+## コスト上限（Vercel）
+
+ダッシュボード: **Settings → Billing → Spend management**（チームの支出上限）。  
+CLI では設定できないことがあるため、デプロイ後にダッシュボードで確認してください。
+
+## GitHub
+
+- Dependabot: `.github/dependabot.yml`
+- CI: lint / test / build
+- **secret scanning** / **push protection** を Security で有効化
 
 ## 応答
 
 | ステータス | いつ |
 |------------|------|
-| 401 | API キー必須だが未送信 / 不正 |
-| 429 | レート制限超過（`Retry-After` ヘッダ） |
+| 401 | API キー必須だが不正（HTTP API のみ） |
+| 429 | レート制限 |
 
-本物の OpenAI / Anthropic キーを `NEXT_PUBLIC_*` に載せないでください。  
 English: [../en/security.md](../en/security.md)

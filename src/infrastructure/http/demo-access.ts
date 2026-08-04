@@ -1,8 +1,22 @@
 /**
- * Fixed-window counter store for demo API protection (single Node process).
- * Not a substitute for Redis/edge rate limits in multi-instance production.
+ * Rate limiting + demo API key helpers for public portfolio host.
+ * Prefer Upstash Redis when REST env is set; otherwise process-local memory.
  */
-export class MemoryRateLimiter {
+
+export interface RateLimitDecision {
+  allowed: boolean;
+  remaining: number;
+  retryAfterMs: number;
+}
+
+export interface RateLimiter {
+  consume(key: string): Promise<RateLimitDecision>;
+}
+
+/**
+ * Fixed-window counter store (single Node process / single serverless isolate).
+ */
+export class MemoryRateLimiter implements RateLimiter {
   private readonly hits = new Map<string, number[]>();
 
   constructor(
@@ -18,14 +32,7 @@ export class MemoryRateLimiter {
     }
   }
 
-  /**
-   * Records a hit if under the limit. Returns remaining budget and optional retry-after.
-   */
-  consume(key: string): {
-    allowed: boolean;
-    remaining: number;
-    retryAfterMs: number;
-  } {
+  async consume(key: string): Promise<RateLimitDecision> {
     const now = this.now();
     const windowStart = now - this.windowMs;
     const prior = this.hits.get(key) ?? [];
@@ -52,7 +59,6 @@ export type DemoAuthResult =
   | { ok: true }
   | { ok: false; status: 401; message: string };
 
-/** Constant-time string compare for API keys (best-effort without crypto subtle). */
 function keysEqual(a: string, b: string): boolean {
   if (a.length !== b.length) {
     return false;
@@ -65,8 +71,8 @@ function keysEqual(a: string, b: string): boolean {
 }
 
 /**
- * When GENERATE_API_KEY is set, require `Authorization: Bearer <key>` or `x-api-key`.
- * When unset, demo stays open (local-dev friendly) but rate limiting still applies.
+ * When GENERATE_API_KEY is set, require Bearer or x-api-key on external HTTP API.
+ * Browser UI uses a Server Action and never needs this key.
  */
 export function checkDemoApiKey(
   request: Request,
@@ -98,14 +104,20 @@ export function checkDemoApiKey(
 }
 
 export function clientRateLimitKey(request: Request): string {
-  const forwarded = request.headers.get("x-forwarded-for");
+  return clientRateLimitKeyFromHeaderGet((name) => request.headers.get(name));
+}
+
+export function clientRateLimitKeyFromHeaderGet(
+  get: (name: string) => string | null,
+): string {
+  const forwarded = get("x-forwarded-for");
   if (forwarded) {
     const first = forwarded.split(",")[0]?.trim();
     if (first) {
       return `ip:${first}`;
     }
   }
-  const realIp = request.headers.get("x-real-ip")?.trim();
+  const realIp = get("x-real-ip")?.trim();
   if (realIp) {
     return `ip:${realIp}`;
   }
@@ -127,20 +139,67 @@ export function readRateLimitConfig(env: NodeJS.ProcessEnv = process.env): {
   };
 }
 
-/** Process-wide limiter for route handlers (tests can inject their own instance). */
-let sharedLimiter: MemoryRateLimiter | null = null;
+export function hasUpstashEnv(env: NodeJS.ProcessEnv = process.env): boolean {
+  return Boolean(
+    env.UPSTASH_REDIS_REST_URL?.trim() && env.UPSTASH_REDIS_REST_TOKEN?.trim(),
+  );
+}
 
-export function getSharedRateLimiter(
+let sharedLimiter: RateLimiter | null = null;
+let sharedLimiterMode: "memory" | "upstash" | null = null;
+
+/**
+ * Shared limiter: Upstash when configured, else in-memory fallback.
+ */
+export async function getSharedRateLimiter(
   env: NodeJS.ProcessEnv = process.env,
-): MemoryRateLimiter {
-  if (!sharedLimiter) {
-    const { maxRequests, windowMs } = readRateLimitConfig(env);
-    sharedLimiter = new MemoryRateLimiter(maxRequests, windowMs);
+): Promise<RateLimiter> {
+  const wantUpstash = hasUpstashEnv(env);
+  const mode: "memory" | "upstash" = wantUpstash ? "upstash" : "memory";
+
+  if (sharedLimiter && sharedLimiterMode === mode) {
+    return sharedLimiter;
   }
+
+  const { maxRequests, windowMs } = readRateLimitConfig(env);
+
+  if (wantUpstash) {
+    const { Redis } = await import("@upstash/redis");
+    const { Ratelimit } = await import("@upstash/ratelimit");
+    const redis = new Redis({
+      url: env.UPSTASH_REDIS_REST_URL!.trim(),
+      token: env.UPSTASH_REDIS_REST_TOKEN!.trim(),
+    });
+    const windowSeconds = Math.max(1, Math.ceil(windowMs / 1000));
+    const ratelimit = new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(maxRequests, `${windowSeconds} s`),
+      analytics: false,
+      prefix: "aab-generate",
+    });
+
+    sharedLimiter = {
+      async consume(key: string): Promise<RateLimitDecision> {
+        const result = await ratelimit.limit(key);
+        return {
+          allowed: result.success,
+          remaining: result.remaining,
+          retryAfterMs: result.success
+            ? 0
+            : Math.max(1, result.reset - Date.now()),
+        };
+      },
+    };
+    sharedLimiterMode = "upstash";
+    return sharedLimiter;
+  }
+
+  sharedLimiter = new MemoryRateLimiter(maxRequests, windowMs);
+  sharedLimiterMode = "memory";
   return sharedLimiter;
 }
 
-/** Test helper — reset singleton between suites. */
 export function resetSharedRateLimiterForTests(): void {
   sharedLimiter = null;
+  sharedLimiterMode = null;
 }
