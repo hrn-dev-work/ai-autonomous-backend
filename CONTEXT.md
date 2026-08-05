@@ -79,10 +79,12 @@ Full detail: [docs/agents/stack.md](docs/agents/stack.md).
 
 See [docs/agents/security.md](docs/agents/security.md). Summary:
 
-- Demo API has **in-memory rate limiting** always; optional `GENERATE_API_KEY` for public hosts.
+- Demo API HTTP surface requires `GENERATE_API_KEY` when set; browser UI uses Server Action (no client secret).
+- Rate limit prefers Upstash when configured; otherwise in-memory per isolate.
 - No real LLM provider keys required for mock; never commit OpenAI/Anthropic secrets if adapters are added.
 - Validate input length and types at the route + domain boundary.
 - Timeouts **abort** in-flight mock work via `AbortSignal` (not only racing the Promise).
+- GitHub: Dependabot + secret scanning + push protection (enable/confirm on Security tab). Vercel: set spend caps in Billing dashboard.
 
 ---
 

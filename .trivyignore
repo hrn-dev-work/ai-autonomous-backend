@@ -1,0 +1,4 @@
+# Trivy ignore — keep empty by default (fail closed).
+# Add one CVE per line only with: owner, reason, review YYYY-MM-DD in PR/ADR.
+# Example:
+# CVE-2024-0000
