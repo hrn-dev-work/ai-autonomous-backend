@@ -35,7 +35,7 @@ npm run dev
 
 1. Open http://localhost:3000 (overview).
 2. Open http://localhost:3000/ai-chat (the interactive demo).
-3. Type a question → “生成する”. Optional: turn on **一時障害をシミュレート** to watch automatic retries (the response metadata shows how many attempts ran).
+3. Type a question → **Generate**. Optional: turn on **Simulate transient failure** to watch automatic retries (the response metadata shows how many attempts ran).
 
 Need a checklist format? [docs/en/getting-started.md](docs/en/getting-started.md)
 
@@ -107,7 +107,7 @@ MIT (sample / portfolio)
 
 ---
 
-# AI Autonomous Backend
+# AI Autonomous Backend（日本語）
 
 ## これは何か（やさしい説明）
 
