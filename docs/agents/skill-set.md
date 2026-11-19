@@ -1,6 +1,6 @@
 # Skill set (agents)
 
-**English only.** Human-facing skill tables belong in both halves of root `README.md` (`docs-language` — EN top / JA bottom).  
+**English only.** Human-facing skill tables belong in both `README.md` (Japanese) and `README.en.md` (English), with top language buttons (`docs-language`).\
 Stack SSOT: [stack.md](./stack.md). Routing: `.cursor/rules/project-entry.mdc` + `~/.cursor/rules/global-agent-routing.mdc`.
 
 ---
@@ -26,7 +26,7 @@ Stack SSOT: [stack.md](./stack.md). Routing: `.cursor/rules/project-entry.mdc` +
 
 | Skill | When |
 |-------|------|
-| `docs-language` | README.md EN top + JA bottom; `docs/en\|ja` one locale; this directory stays English |
+| `docs-language` | README.md (Japanese) + README.en.md (English), with top language buttons; `docs/en\|ja` one locale; this directory stays English |
 | `wsl-agent-invoke` | Shell, git, gh on WSL Ubuntu workspace |
 | `bootstrap-project-foundation` | Missing `CONTEXT.md` or `project-entry.mdc` |
 | `agent-session-closeout` | Substantial work finished (impl / docs / Git·PR) |
@@ -75,4 +75,4 @@ Stack SSOT: [stack.md](./stack.md). Routing: `.cursor/rules/project-entry.mdc` +
 
 ## E. Maintenance
 
-Update section A and both README halves when product scope changes. Keep this file English-only.
+Update section A and both README language files when product scope changes. Keep this file English-only.

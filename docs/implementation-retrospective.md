@@ -22,6 +22,14 @@
 
 <!-- 以下、新しいエントリをこの行の上に追加 -->
 
+### 2026-11-19 — Dependabot bumps on main and README test comments
+
+- **変更**: package.json / package-lock.json（next 15.5.28, sharp 0.35.5, vitest 4.1.12, vite 8.3.4, js-yaml 4.3.2, source-map-js 1.2.2, brace-expansion 1.1.21 / 5.0.12）; README.md / README.en.md の確認コメントと強制改行
+- **良かった点**: `npm test` 21件、`npm run lint`、`npm run build` が同じロックファイルで通った
+- **改善点**: npm 10.9.9 は vite の peer 解決で落ちるため、transitive は範囲内のロック更新で固定した
+- **ルール更新**: 無
+- **次回テスト**: Component（既存 Vitest）を bump のたびに再実行
+
 ### 2026-08-04 — next-phase: abort, port, rate limit
 
 - **変更**: AbortSignal `withTimeout`/`abortableSleep`; `TextGenerator` port; `MemoryRateLimiter` + optional API key; docs

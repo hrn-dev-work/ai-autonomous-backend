@@ -5,7 +5,7 @@ Guides for people reading this portfolio sample (not agent rules).
 Agent-facing docs stay English-only at the repo root / `docs/agents/` / `docs/adr/`.  
 Japanese human guides: `docs/ja/`.
 
-Do **not** mix English and Japanese inside files under this tree. Root `README.md` is the exception (EN top / JA bottom). Policy: `docs-language` skill.
+Do **not** mix English and Japanese inside files under this tree. Root `README.md` is Japanese and `README.en.md` is English, with Japanese-first language buttons at the top of both files. Policy: `docs-language` skill.
 
 ## Start here
 
