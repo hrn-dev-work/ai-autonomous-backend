@@ -16,11 +16,11 @@ This is a **demo app** that shows how to build a reliable AI reply feature for t
 
 This repository is a **portfolio sample** for technical review and hiring conversations. It is intentionally small.
 
-**Live demo (mock only, no LLM API secrets):**\
-https://ai-autonomous-backend.vercel.app/ai-chat\
+**Live demo (mock only, no LLM API secrets):**
+https://ai-autonomous-backend.vercel.app/ai-chat
 
-- Browser UI: Server Action (no API key in the client)\
-- External `POST /api/ai/generate`: requires production `GENERATE_API_KEY`\
+- Browser UI: Server Action (no API key in the client)
+- External `POST /api/ai/generate`: requires production `GENERATE_API_KEY`
 - Security notes: [docs/en/security.md](docs/en/security.md)
 
 Source: https://github.com/hrn-dev-work/ai-autonomous-backend
@@ -32,7 +32,7 @@ Source: https://github.com/hrn-dev-work/ai-autonomous-backend
 ```bash
 npm install
 npm run dev
-# engineers: npm test
+# Check: npm test
 ```
 
 1. Open http://localhost:3000 (overview).

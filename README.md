@@ -16,11 +16,11 @@ LINEボットや社内ツール向けに、**AIの返答を返す仕組みを、
 
 ポートフォリオ用の小さな見本です。
 
-**ライブデモ（モックのみ。LLM の秘密鍵は不要）:**\
-https://ai-autonomous-backend.vercel.app/ai-chat\
+**ライブデモ（モックのみ。LLM の秘密鍵は不要）:**
+https://ai-autonomous-backend.vercel.app/ai-chat
 
-- ブラウザ UI: Server Action（クライアントに API キー無し）\
-- 外部 `POST /api/ai/generate`: 本番 `GENERATE_API_KEY` 必須\
+- ブラウザ UI: Server Action（クライアントに API キー無し）
+- 外部 `POST /api/ai/generate`: 本番 `GENERATE_API_KEY` 必須
 - セキュリティ: [docs/ja/security.md](docs/ja/security.md)
 
 ソース: https://github.com/hrn-dev-work/ai-autonomous-backend
@@ -32,7 +32,7 @@ https://ai-autonomous-backend.vercel.app/ai-chat\
 ```bash
 npm install
 npm run dev
-# 技術確認: npm test
+# 確認: npm test
 ```
 
 1. http://localhost:3000 （概要）
